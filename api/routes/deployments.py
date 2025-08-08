@@ -30,10 +30,11 @@ min_client = Minio(
 def create_deployment_page():
     return render_template("create_deployment.html")
 
+
 @deploy_bp.post("/create")
 def handle_deploy():
     """Creates deployment from user-provided code
-    
+
     Does the following things:
     1. Handles user code upload (entire folder)
     2. Zips the folder and uploads it to MinIO
@@ -47,13 +48,12 @@ def handle_deploy():
     if not files or files[0].filename == "":
         return "No files selected", 400
 
-
     # source of truth
     deployment_id = uuid4().hex
 
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     os.makedirs(ZIP_FOLDER, exist_ok=True)
-        
+
     upload_subfolder = os.path.join(UPLOAD_FOLDER, deployment_id)
     if os.path.exists(upload_subfolder):
         shutil.rmtree(upload_subfolder)
@@ -110,9 +110,8 @@ def handle_deploy():
 
     # send request to Management Plane to create deployment
     stub = ManagementPlaneService.get_grpc_stub()
-    grpc_response = stub.CreateDeployment(deployments_pb2.CreateDeployRequest(deployment_id=deployment_id))
+    grpc_response = stub.CreateDeployment(
+        deployments_pb2.CreateDeployRequest(deployment_id=deployment_id)
+    )
 
-    return jsonify({
-        "error": grpc_response.error,
-        "message": grpc_response.message
-    })
+    return jsonify({"error": grpc_response.error, "message": grpc_response.message})

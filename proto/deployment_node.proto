@@ -1,0 +1,23 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/ahnaf-zamil/stratus/deploy-node-agent/proto";
+
+service DeploymentNode {
+    rpc HealthCheck (google.protobuf.Empty) returns (HealthCheckResponse) {}
+    rpc DeployApp (DeployAppRequest) returns (DeployAppResponse) {}
+}
+
+message HealthCheckResponse {
+    string node_id = 1;
+    double cpu_perc = 2;
+    double memory_perc = 3;
+}
+
+message DeployAppRequest {
+    string deployment_id = 1;
+}
+
+message DeployAppResponse {
+    bool accepted = 1;
+}

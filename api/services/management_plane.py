@@ -1,7 +1,8 @@
-from shared import deployments_pb2_grpc, deployments_pb2 # To be imported by controller
+from shared import deployments_pb2_grpc, deployments_pb2  # To be imported by controller
 import grpc
 
 GRPC_ENDPOINT = "localhost:50051"
+
 
 class ManagementPlaneService:
     @staticmethod

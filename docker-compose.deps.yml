@@ -23,7 +23,7 @@ services:
 
   consul-server:
     image: hashicorp/consul:latest
-    container_name: deployment-node-consul-server
+    container_name: stratus-consul-server
     command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
     ports:
       - "8500:8500"       # HTTP API and UI
