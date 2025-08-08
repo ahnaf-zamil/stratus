@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message ResponseStatus {
+   bool error = 1;
+   string message = 2;
+}
+
+message CreateDeployRequest {
+   string deployment_id = 1;
+}
+
+service DeploymentService {
+   rpc CreateDeployment(CreateDeployRequest) returns (ResponseStatus) {}
+}

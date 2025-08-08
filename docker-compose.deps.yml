@@ -1,0 +1,42 @@
+services:
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"      # S3 API
+      - "9001:9001"      # MinIO Console
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+    volumes:
+      - ./.docker/minio:/data
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./.docker/redis:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  consul-server:
+    image: hashicorp/consul:latest
+    container_name: deployment-node-consul-server
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+    ports:
+      - "8500:8500"       # HTTP API and UI
+      - "8600:8600/udp"   # DNS interface
+      - "8300:8300"       # Server RPC
+      - "8301:8301"       # Serf LAN (TCP/UDP)
+      - "8302:8302"       # Serf WAN (TCP/UDP)
+      - "8400:8400"       # RPC for CLI tools
+    volumes:
+      - ./.docker/consul-data:/consul/data
+    networks:
+      - stratus-internal
+
+networks:
+  stratus-internal:
+    external: true
