@@ -70,7 +70,7 @@ func (s *GRPCServer) DeployApp(ctx context.Context, in *pb.DeployAppRequest) (*p
 			// delete temp zip file, we can ignore any errors if they occur
 			os.Remove(filePath)
 
-			// TODO: Run deployment code in docker container
+			// Run the container!
 			err = lib.RunDeploymentContainer(ctx, in.GetDeploymentId(), deploymentFolder)
 			if err != nil {
 				return err

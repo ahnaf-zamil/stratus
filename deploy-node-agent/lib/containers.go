@@ -71,6 +71,7 @@ func RunDeploymentContainer(ctx context.Context, deploymentId string, deployment
 		},
 	}
 
+	// Create container
 	resp, err := client.ContainerCreate(ctx, config, hostConfig, nil, nil, fmt.Sprintf("deploy-%s-%s", deploymentId, containerId))
 	if err != nil {
 		return err

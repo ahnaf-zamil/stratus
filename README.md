@@ -1,6 +1,6 @@
-# Stratus, an open-source Application Deployment System
+# Stratus, infrastructure for a multi-tenant Platform-as-a-Service system.
 
-Stratus provides infrastructure for a multi-tenant Platform-as-a-Service system. More coming soon.
+Stratus provides a platform for running containerized apps on shared infrastructure. More coming soon.
 
 This README is a work in progress.
 
