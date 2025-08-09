@@ -41,9 +41,11 @@ def get_least_burdened_node():
     sorted_nodes = sorted(
         nodes.items(), key=lambda item: (item[1]["cpu"], item[1]["mem"])
     )
-
-    least_burderened_node_id = sorted_nodes[0][0]
-    return least_burderened_node_id
+    if len(sorted_nodes):
+        least_burderened_node_id = sorted_nodes[0][0]
+        return least_burderened_node_id
+    else:
+        return None
 
 
 def check_deployment_nodes():

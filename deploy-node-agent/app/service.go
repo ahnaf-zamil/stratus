@@ -9,6 +9,7 @@ import (
 
 	"github.com/ahnaf-zamil/stratus/deploy-node-agent/lib"
 	pb "github.com/ahnaf-zamil/stratus/deploy-node-agent/proto"
+	"github.com/ahnaf-zamil/stratus/deploy-node-agent/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/shirou/gopsutil/cpu"
@@ -40,35 +41,51 @@ func (s *GRPCServer) HealthCheck(ctx context.Context, in *emptypb.Empty) (*pb.He
 func (s *GRPCServer) DeployApp(ctx context.Context, in *pb.DeployAppRequest) (*pb.DeployAppResponse, error) {
 	log.Println("Deploying", in.DeploymentId)
 
-	filePath, err := lib.DownloadDeploymentZipFile(ctx, in.GetDeploymentId(), ZIP_FILE_OUTPUT_DIR)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
+	// Create background deployment task and immediately return an Accepted response
+	go func() {
+		err := func() error {
+			ctx := context.TODO()
 
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
+			filePath, err := lib.DownloadDeploymentZipFile(ctx, in.GetDeploymentId(), util.ZIP_FILE_OUTPUT_DIR)
+			if err != nil {
+				return err
+			}
 
-	deploymentFolder := fmt.Sprintf("%s/%s/%s", homeDir, "deployments", in.GetDeploymentId())
+			homeDir, err := os.UserHomeDir()
+			if err != nil {
+				return err
+			}
 
-	err = os.MkdirAll(deploymentFolder, 0777)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
+			deploymentFolder := fmt.Sprintf("%s/%s/%s", homeDir, "deployments", in.GetDeploymentId())
 
-	err = lib.UnzipDeploymentZipFile(filePath, deploymentFolder)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	// delete temp zip file, we can ignore any errors if they occur
-	os.Remove(filePath)
+			err = os.MkdirAll(deploymentFolder, 0777)
+			if err != nil {
+				return err
+			}
 
-	// TODO: Run deployment code in docker container
+			err = lib.UnzipDeploymentZipFile(filePath, deploymentFolder)
+			if err != nil {
+				return err
+			}
+			// delete temp zip file, we can ignore any errors if they occur
+			os.Remove(filePath)
+
+			// TODO: Run deployment code in docker container
+			err = lib.RunDeploymentContainer(ctx, in.GetDeploymentId(), deploymentFolder)
+			if err != nil {
+				return err
+			}
+			return nil
+		}()
+
+		if err != nil {
+			// TODO: Handle errors. Maybe trigger a deployment failure or log it somewhere
+			log.Println(err)
+			return
+		}
+
+		log.Printf("Successfully created deployment %s\n", in.GetDeploymentId())
+	}()
 
 	return &pb.DeployAppResponse{Accepted: true}, nil
 }

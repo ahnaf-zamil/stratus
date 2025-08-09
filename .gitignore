@@ -5,3 +5,5 @@ __pycache__/
 dev_scratch/
 venv/
 bin/*
+uploads/
+zips/

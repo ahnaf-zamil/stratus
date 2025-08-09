@@ -8,7 +8,9 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/ahnaf-zamil/stratus/deploy-node-agent/app"
+	"github.com/ahnaf-zamil/stratus/deploy-node-agent/lib"
 	"github.com/ahnaf-zamil/stratus/deploy-node-agent/proto"
+	"github.com/ahnaf-zamil/stratus/deploy-node-agent/util"
 )
 
 var port int = 6969
@@ -21,9 +23,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen on %s: %v", host_str, err)
 	}
-	gServer := &app.GRPCServer{NODE_ID: app.GenerateCryptoID()}
+	gServer := &app.GRPCServer{NODE_ID: util.GenerateCryptoID()}
 	s := grpc.NewServer()
 	proto.RegisterDeploymentNodeServer(s, gServer)
+
+	defer lib.CleanupDockerClient()
 
 	log.Printf("Stratus Deployment Node Agent listening on %v", lis.Addr())
 	log.Printf("Node ID:	%v", gServer.NODE_ID)
