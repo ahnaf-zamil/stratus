@@ -7,7 +7,10 @@ require (
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.7
+	github.com/ahnaf-zamil/stratus/shared/proto_go v0.0.0
 )
+
+replace github.com/ahnaf-zamil/stratus/shared/proto_go => ../shared/proto_go
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect

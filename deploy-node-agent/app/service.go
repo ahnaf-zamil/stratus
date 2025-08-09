@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/ahnaf-zamil/stratus/deploy-node-agent/lib"
-	pb "github.com/ahnaf-zamil/stratus/deploy-node-agent/proto"
 	"github.com/ahnaf-zamil/stratus/deploy-node-agent/util"
+	pb "github.com/ahnaf-zamil/stratus/shared/proto_go"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/shirou/gopsutil/cpu"

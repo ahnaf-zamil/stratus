@@ -4,7 +4,7 @@
 // - protoc             v3.21.12
 // source: proto/deployment_node.proto
 
-package proto
+package proto_go
 
 import (
 	context "context"

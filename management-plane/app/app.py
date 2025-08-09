@@ -3,9 +3,8 @@ import os
 import threading
 import grpc
 from concurrent import futures
-import time
 
-from shared import deployments_pb2_grpc
+from shared.proto_py import deployments_pb2_grpc
 from .service import DeploymentService
 from .nodes import check_deployment_nodes
 from .healthcheck import run_nodes_healthcheck

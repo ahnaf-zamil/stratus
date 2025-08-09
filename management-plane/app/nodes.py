@@ -4,8 +4,8 @@ import os
 
 import grpc
 
-from shared.deployment_node_pb2_grpc import DeploymentNodeStub
-from shared.deployment_node_pb2 import HealthCheckResponse
+from shared.proto_py.deployment_node_pb2_grpc import DeploymentNodeStub
+from shared.proto_py.deployment_node_pb2 import HealthCheckResponse
 from google.protobuf import empty_pb2
 
 NODES = {}  # Node ID -> health status and host info

@@ -3,10 +3,10 @@ import sys
 import traceback
 import grpc
 
-from shared.deployment_node_pb2_grpc import DeploymentNodeStub
-from shared import deployment_node_pb2
-from shared.deployments_pb2 import CreateDeployRequest, ResponseStatus
-from shared import deployments_pb2_grpc
+from shared.proto_py.deployment_node_pb2_grpc import DeploymentNodeStub
+from shared.proto_py import deployment_node_pb2
+from shared.proto_py.deployments_pb2 import CreateDeployRequest, ResponseStatus
+from shared.proto_py import deployments_pb2_grpc
 
 from .nodes import get_least_burdened_node, get_nodes
 from .exceptions import NoDeploymentNode

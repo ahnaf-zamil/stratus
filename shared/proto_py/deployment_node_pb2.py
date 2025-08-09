@@ -25,14 +25,14 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15\x64\x65ployment_node.proto\x1a\x1bgoogle/protobuf/empty.proto\"M\n\x13HealthCheckResponse\x12\x0f\n\x07node_id\x18\x01 \x01(\t\x12\x10\n\x08\x63pu_perc\x18\x02 \x01(\x01\x12\x13\n\x0bmemory_perc\x18\x03 \x01(\x01\")\n\x10\x44\x65ployAppRequest\x12\x15\n\rdeployment_id\x18\x01 \x01(\t\"%\n\x11\x44\x65ployAppResponse\x12\x10\n\x08\x61\x63\x63\x65pted\x18\x01 \x01(\x08\x32\x85\x01\n\x0e\x44\x65ploymentNode\x12=\n\x0bHealthCheck\x12\x16.google.protobuf.Empty\x1a\x14.HealthCheckResponse\"\x00\x12\x34\n\tDeployApp\x12\x11.DeployAppRequest\x1a\x12.DeployAppResponse\"\x00\x42\x38Z6github.com/ahnaf-zamil/stratus/deploy-node-agent/protob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15\x64\x65ployment_node.proto\x1a\x1bgoogle/protobuf/empty.proto\"M\n\x13HealthCheckResponse\x12\x0f\n\x07node_id\x18\x01 \x01(\t\x12\x10\n\x08\x63pu_perc\x18\x02 \x01(\x01\x12\x13\n\x0bmemory_perc\x18\x03 \x01(\x01\")\n\x10\x44\x65ployAppRequest\x12\x15\n\rdeployment_id\x18\x01 \x01(\t\"%\n\x11\x44\x65ployAppResponse\x12\x10\n\x08\x61\x63\x63\x65pted\x18\x01 \x01(\x08\x32\x85\x01\n\x0e\x44\x65ploymentNode\x12=\n\x0bHealthCheck\x12\x16.google.protobuf.Empty\x1a\x14.HealthCheckResponse\"\x00\x12\x34\n\tDeployApp\x12\x11.DeployAppRequest\x1a\x12.DeployAppResponse\"\x00\x42\x0cZ\n./proto_gob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'deployment_node_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
-  _globals['DESCRIPTOR']._serialized_options = b'Z6github.com/ahnaf-zamil/stratus/deploy-node-agent/proto'
+  _globals['DESCRIPTOR']._serialized_options = b'Z\n./proto_go'
   _globals['_HEALTHCHECKRESPONSE']._serialized_start=54
   _globals['_HEALTHCHECKRESPONSE']._serialized_end=131
   _globals['_DEPLOYAPPREQUEST']._serialized_start=133

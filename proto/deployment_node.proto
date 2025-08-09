@@ -1,7 +1,7 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/ahnaf-zamil/stratus/deploy-node-agent/proto";
+option go_package = "./proto_go";
 
 service DeploymentNode {
     rpc HealthCheck (google.protobuf.Empty) returns (HealthCheckResponse) {}

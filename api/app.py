@@ -3,7 +3,7 @@ from .routes.deployments import deploy_bp
 
 from .lib.db import db, migrate
 
-from .models.application import UserApplication
+from .models.application import UserApplication, Deployment
 
 import os
 import dotenv

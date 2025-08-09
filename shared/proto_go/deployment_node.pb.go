@@ -4,7 +4,7 @@
 // 	protoc        v3.21.12
 // source: proto/deployment_node.proto
 
-package proto
+package proto_go
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -186,7 +186,8 @@ const file_proto_deployment_node_proto_rawDesc = "" +
 	"\baccepted\x18\x01 \x01(\bR\baccepted2\x85\x01\n" +
 	"\x0eDeploymentNode\x12=\n" +
 	"\vHealthCheck\x12\x16.google.protobuf.Empty\x1a\x14.HealthCheckResponse\"\x00\x124\n" +
-	"\tDeployApp\x12\x11.DeployAppRequest\x1a\x12.DeployAppResponse\"\x00B8Z6github.com/ahnaf-zamil/stratus/deploy-node-agent/protob\x06proto3"
+	"\tDeployApp\x12\x11.DeployAppRequest\x1a\x12.DeployAppResponse\"\x00B\fZ\n" +
+	"./proto_gob\x06proto3"
 
 var (
 	file_proto_deployment_node_proto_rawDescOnce sync.Once

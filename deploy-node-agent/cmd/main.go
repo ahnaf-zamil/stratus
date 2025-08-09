@@ -9,8 +9,8 @@ import (
 
 	"github.com/ahnaf-zamil/stratus/deploy-node-agent/app"
 	"github.com/ahnaf-zamil/stratus/deploy-node-agent/lib"
-	"github.com/ahnaf-zamil/stratus/deploy-node-agent/proto"
 	"github.com/ahnaf-zamil/stratus/deploy-node-agent/util"
+	"github.com/ahnaf-zamil/stratus/shared/proto_go"
 )
 
 var port int = 6969
@@ -25,7 +25,7 @@ func main() {
 	}
 	gServer := &app.GRPCServer{NODE_ID: util.GenerateCryptoID()}
 	s := grpc.NewServer()
-	proto.RegisterDeploymentNodeServer(s, gServer)
+	proto_go.RegisterDeploymentNodeServer(s, gServer)
 
 	defer lib.CleanupDockerClient()
 
