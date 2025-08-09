@@ -1,0 +1,7 @@
+flask
+flask-sqlalchemy
+grpcio
+grpcio-tools
+minio
+requests
+psycopg2-binary
