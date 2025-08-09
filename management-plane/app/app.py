@@ -34,5 +34,6 @@ def serve_grpc_app():
     t1 = threading.Thread(target=run_nodes_healthcheck)
     try:
         t1.start()
+        t1.join()
     except KeyboardInterrupt:
         server.stop(0)

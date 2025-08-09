@@ -15,7 +15,6 @@ var port int = 6969
 var host string = "0.0.0.0"
 
 func main() {
-
 	host_str := fmt.Sprintf("%s:%d", host, port)
 	lis, err := net.Listen("tcp", host_str)
 

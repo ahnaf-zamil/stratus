@@ -1,4 +1,6 @@
 import logging
+import sys
+import traceback
 import grpc
 
 from shared.deployment_node_pb2_grpc import DeploymentNodeStub
@@ -15,11 +17,10 @@ class DeploymentService(deployments_pb2_grpc.DeploymentServiceServicer):
     ) -> ResponseStatus:
         logging.info(f"Received deployment request: {request.deployment_id}")
 
-        node_id = get_least_burdened_node()
-
-        def send_grpc_req(host: str):
+        def send_grpc_req():
             # Connect to the least burdened Deployment Node's agent
-            channel = grpc.insecure_channel(host)
+            node_id = get_least_burdened_node()
+            channel = grpc.insecure_channel(get_nodes()[node_id]["host"])
             stub = DeploymentNodeStub(channel)
             grpc_response = stub.DeployApp(
                 deployment_node_pb2.DeployAppRequest(
@@ -30,15 +31,10 @@ class DeploymentService(deployments_pb2_grpc.DeploymentServiceServicer):
 
         try:
             # Send deploy request
-            grpc_response = send_grpc_req(get_nodes()[node_id]["host"])
-        except grpc._channel._InactiveRpcError:
-            # Thrown if the node is down or if we cannot connect to it
-
-            # Remove the node and retry
-            remove_node(node_id)
-
-            node_id = get_least_burdened_node()
-            grpc_response = send_grpc_req(get_nodes()[node_id]["host"])
+            grpc_response = send_grpc_req()
+        except grpc._channel._InactiveRpcError as e:
+            logging.error("".join(traceback.format_exception(e)))
+            return ResponseStatus(error=True, message=str(e))
 
         return ResponseStatus(
             error=grpc_response.accepted,

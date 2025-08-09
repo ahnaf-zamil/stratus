@@ -6,7 +6,7 @@ import grpc
 
 from .nodes import get_nodes, healthcheck_node, remove_node
 
-INTERVAL = 30  # seconds
+INTERVAL = 5  # seconds
 
 
 def run_nodes_healthcheck():
