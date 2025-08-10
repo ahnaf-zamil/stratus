@@ -5,3 +5,5 @@ grpcio-tools
 minio
 requests
 psycopg2-binary
+flask-pydantic
+flask-cors
