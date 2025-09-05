@@ -1,0 +1,6 @@
+runtimes:
+  Python:
+    py310:
+      version: "3.10"
+    py311:
+      version: "3.11"

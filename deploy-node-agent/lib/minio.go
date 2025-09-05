@@ -1,9 +1,5 @@
 package lib
 
-/*
-
- */
-
 import (
 	"archive/zip"
 	"context"
@@ -26,6 +22,7 @@ var DEPLOY_BUCKET = "stratus-deployments"
 
 var minioClient *minio.Client
 
+// Lazily initializes and returns a MinIO client
 func GetMinIOClient() (*minio.Client, error) {
 	if minioClient != nil {
 		return minioClient, nil
@@ -39,6 +36,7 @@ func GetMinIOClient() (*minio.Client, error) {
 	return minioClient, err
 }
 
+// Downloads a deployment zip file from MinIO to /tmp
 func DownloadDeploymentZipFile(ctx context.Context, deployment_id string, output_dir string) (string, error) {
 	client, err := GetMinIOClient()
 	if err != nil {
@@ -51,6 +49,7 @@ func DownloadDeploymentZipFile(ctx context.Context, deployment_id string, output
 	return download_path, client.FGetObject(context.Background(), DEPLOY_BUCKET, fileName, download_path, minio.GetObjectOptions{})
 }
 
+// Unzips a deployment zip file into the specified output directory
 func UnzipDeploymentZipFile(filePath string, outputParentDir string) error {
 	reader, err := zip.OpenReader(filePath)
 	if err != nil {
@@ -67,19 +66,16 @@ func UnzipDeploymentZipFile(filePath string, outputParentDir string) error {
 		}
 
 		if f.FileInfo().IsDir() {
-			// Create directory
 			if err := os.MkdirAll(newFilePath, os.ModePerm); err != nil {
 				return err
 			}
 			continue
 		}
 
-		// Ensure parent directories exist
 		if err := os.MkdirAll(filepath.Dir(newFilePath), os.ModePerm); err != nil {
 			return err
 		}
 
-		// Create file
 		rc, err := f.Open()
 		if err != nil {
 			return err

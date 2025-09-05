@@ -1,34 +1,36 @@
+"""
+Node registry and health aggregation for the management plane.
+Tracks active deployment nodes and selects the least burdened one.
+"""
+
 import json
 import logging
-import os
-
 import grpc
 
 from shared.proto_py.deployment_node_pb2_grpc import DeploymentNodeStub
-from shared.proto_py.deployment_node_pb2 import HealthCheckResponse
 from google.protobuf import empty_pb2
 
-NODES = {}  # Node ID -> health status and host info
+_nodes = {}  # node_id -> {cpu, mem, host}
 
 
 def get_nodes():
-    return NODES
+    return _nodes
 
 
 def remove_node(node_id: str):
-    global NODES
-    del NODES[node_id]
+    _nodes.pop(node_id, None)
 
 
 def healthcheck_node(host: str) -> str:
-    # Get stats from node and add it to node dict
-    global NODES
+    """
+    Performs a healthcheck RPC to the given node and updates its stats.
+    Returns the node_id if successful.
+    """
     channel = grpc.insecure_channel(host)
     stub = DeploymentNodeStub(channel)
-
     grpc_response = stub.HealthCheck(empty_pb2.Empty())
 
-    NODES[grpc_response.node_id] = {
+    _nodes[grpc_response.node_id] = {
         "cpu": grpc_response.cpu_perc,
         "mem": grpc_response.memory_perc,
         "host": host,
@@ -37,29 +39,40 @@ def healthcheck_node(host: str) -> str:
 
 
 def get_least_burdened_node():
-    nodes = get_nodes()
-    sorted_nodes = sorted(
-        nodes.items(), key=lambda item: (item[1]["cpu"], item[1]["mem"])
-    )
-    if len(sorted_nodes):
-        least_burderened_node_id = sorted_nodes[0][0]
-        return least_burderened_node_id
-    else:
+    """
+    Returns the node_id of the least burdened node based on CPU and memory.
+    """
+    if not _nodes:
         return None
+
+    sorted_nodes = sorted(
+        _nodes.items(), key=lambda item: (item[1]["cpu"], item[1]["mem"])
+    )
+    return sorted_nodes[0][0]
 
 
 def check_deployment_nodes():
-    with open("../config.json", "r") as f:
-        config = json.load(f)
+    """
+    Loads node config and registers reachable nodes via healthcheck.
+    """
+    try:
+        with open("../config.json", "r") as f:
+            config = json.load(f)
+    except Exception as e:
+        logging.error(f"Failed to load config.json: {e}")
+        return
 
-    for node in config["DEPLOYMENT_NODES"]:
+    nodes_config = config.get("DEPLOYMENT_NODES", [])
+    if not nodes_config:
+        logging.warning("No deployment nodes found in config.")
+        return
+
+    for node in nodes_config:
         host = f"{node['ip']}:{node['port']}"
         try:
             node_id = healthcheck_node(host)
             logging.info(f"Registered node: {node_id} ({host})")
         except grpc.RpcError:
-            logging.error(
-                f"Deployment Node on {node['ip']}:{node['port']} cannot be reached."
-            )
+            logging.error(f"Node unreachable: {host}")
 
-    logging.info(f"Total nodes: {len(NODES)}")
+    logging.info(f"Total active nodes: {len(_nodes)}")

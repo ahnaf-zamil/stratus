@@ -1,5 +1,9 @@
+"""
+gRPC service implementation for handling deployment requests.
+Routes requests to the least burdened deployment node.
+"""
+
 import logging
-import sys
 import traceback
 import grpc
 
@@ -14,37 +18,39 @@ from .exceptions import NoDeploymentNode
 
 class DeploymentService(deployments_pb2_grpc.DeploymentServiceServicer):
     def CreateDeployment(
-        self, request: CreateDeployRequest, context: grpc.ServicerContext
+        self, request: CreateDeployRequest, _: grpc.ServicerContext
     ) -> ResponseStatus:
         logging.info(f"Received deployment request: {request.deployment_id}")
 
-        def send_grpc_req():
-            # Connect to the least burdened Deployment Node's agent
+        def _dispatch_deploy_request():
+            # Select least burdened node and send deployment request
             node_id = get_least_burdened_node()
             if not node_id:
                 raise NoDeploymentNode("No deployment node is available. Retry later.")
 
             channel = grpc.insecure_channel(get_nodes()[node_id]["host"])
             stub = DeploymentNodeStub(channel)
-            grpc_response = stub.DeployApp(
+            return stub.DeployApp(
                 deployment_node_pb2.DeployAppRequest(
                     deployment_id=request.deployment_id
                 )
             )
-            return grpc_response
 
         try:
-            # Send deploy request
-            grpc_response = send_grpc_req()
+            grpc_response = _dispatch_deploy_request()
         except (grpc._channel._InactiveRpcError, NoDeploymentNode) as e:
+            logging.error("Deployment failed:")
             logging.error("".join(traceback.format_exception(e)))
             return ResponseStatus(error=True, message=str(e))
 
+        if not grpc_response.accepted:
+            logging.warning(f"Deployment rejected by node for {request.deployment_id}")
+
         return ResponseStatus(
-            error=grpc_response.accepted,
+            error=not grpc_response.accepted,
             message=(
                 f"Deployment {request.deployment_id} scheduled"
                 if grpc_response.accepted
-                else "Error!"
+                else "Deployment rejected by node"
             ),
         )

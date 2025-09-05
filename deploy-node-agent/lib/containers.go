@@ -16,10 +16,12 @@ const (
 	ContainerImagePython = "stratus_test:latest"
 )
 
+// Helper to get pointer to int64 (used in resource limits)
 func intPtr(i int64) *int64 {
 	return &i
 }
 
+// Lazily initializes and returns a Docker API client
 func getAPIClient() (*client.Client, error) {
 	if apiClient != nil {
 		return apiClient, nil
@@ -28,6 +30,8 @@ func getAPIClient() (*client.Client, error) {
 	return apiClient, err
 }
 
+// RunDeploymentContainer launches a container for the given deployment ID.
+// It mounts the deployment code, applies resource limits, and uses gVisor for isolation.
 func RunDeploymentContainer(ctx context.Context, deploymentId string, deploymentFilesPath string) error {
 	// TODO: Check if any other containers exist for this deployment or not
 
@@ -35,7 +39,8 @@ func RunDeploymentContainer(ctx context.Context, deploymentId string, deployment
 	if err != nil {
 		return err
 	}
-	// Generate a logical container ID. We'll use this in the application instead of the Docker generated one
+
+	// Generate a logical container ID for internal tracking
 	containerId := util.GenerateCryptoID()
 
 	config := &container.Config{
@@ -45,14 +50,14 @@ func RunDeploymentContainer(ctx context.Context, deploymentId string, deployment
 			"logical-container-id": containerId,
 		},
 		Env: []string{
-			// Some env vars for the container
 			fmt.Sprintf("DEPLOYMENT_ID=%s", deploymentId),
 			fmt.Sprintf("LOGICAL_CONTAINER_ID=%s", containerId),
 		},
 	}
 
 	hostConfig := &container.HostConfig{
-		// This is important, make sure we be using gvisor
+		// gVisor runtime with DNS override for outbound resolution
+		DNS:         []string{"1.1.1.1"},
 		Runtime:     "runsc",
 		SecurityOpt: []string{"apparmor=gvisor-profile"},
 		Mounts: []mount.Mount{
@@ -63,21 +68,20 @@ func RunDeploymentContainer(ctx context.Context, deploymentId string, deployment
 				ReadOnly: false,
 			},
 		},
-		// may change this later
 		Resources: container.Resources{
-			Memory:    256 * 1024 * 1024, // 256 mb
-			CPUQuota:  50000,             // 0.5 of a cpu
+			Memory:    256 * 1024 * 1024,
+			CPUQuota:  50000,
 			PidsLimit: intPtr(100),
 		},
 	}
 
-	// Create container
+	// Create container with deterministic name
 	resp, err := client.ContainerCreate(ctx, config, hostConfig, nil, nil, fmt.Sprintf("deploy-%s-%s", deploymentId, containerId))
 	if err != nil {
 		return err
 	}
 
-	// Start the container
+	// Start container
 	if err := client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return err
 	}
@@ -85,6 +89,7 @@ func RunDeploymentContainer(ctx context.Context, deploymentId string, deployment
 	return nil
 }
 
+// CleanupDockerClient closes the Docker API client if initialized
 func CleanupDockerClient() {
 	if apiClient != nil {
 		apiClient.Close()
