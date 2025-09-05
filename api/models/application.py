@@ -5,13 +5,14 @@ Defines relationships and schema for persistence.
 
 from typing import List
 
-from sqlalchemy import String, BigInteger, ForeignKey
+from sqlalchemy import String, BigInteger, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..lib.db import db
+from ..lib.runtimes import get_runtime_by_id
+from .common import TimestampModel
 
 
-class UserApplication(db.Model):
+class UserApplication(TimestampModel):
     __tablename__ = "user_applications"
 
     id: Mapped[int] = mapped_column(BigInteger(), primary_key=True, autoincrement=True)
@@ -29,15 +30,30 @@ class UserApplication(db.Model):
     )
     """One-to-many relationship with deployments"""
 
+    current_deployment_id: Mapped[str] = mapped_column(
+        String(32), nullable=True
+    )  # Initially an application won't have deployments
+    """ID of the currently running deployment"""
 
-class Deployment(db.Model):
+    git_repo: Mapped[str] = mapped_column(Text(), nullable=False)
+    """Remote Git repo URL to fetch application code"""
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "runtime": get_runtime_by_id(self.runtime),
+            "current_deployment_id": self.current_deployment_id,
+            "git_repo": self.git_repo,
+            "created_at": int(self.created_at.timestamp()),
+        }
+
+
+class Deployment(TimestampModel):
     __tablename__ = "deployments"
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True)
     """Unique deployment ID (UUID or hash)"""
-
-    created_at: Mapped[int] = mapped_column(BigInteger(), nullable=False)
-    """Unix timestamp of deployment creation"""
 
     app_id: Mapped[int] = mapped_column(
         ForeignKey("user_applications.id", ondelete="CASCADE"), nullable=False
@@ -46,3 +62,6 @@ class Deployment(db.Model):
 
     user_app: Mapped["UserApplication"] = relationship(back_populates="deployments")
     """Reference to the parent application"""
+
+    def to_json(self):
+        return {"id": self.id, "created_at": int(self.created_at.timestamp())}

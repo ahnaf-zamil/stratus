@@ -26,6 +26,8 @@ interface CreateAppFormProps {
   setAppName: (name: string) => void;
   runtimeSelect: string[];
   setRuntimeSelect: (runtimes: string[]) => void;
+  gitRepo: string;
+  setGitRepo: (url: string) => void;
   runtimeList: ListCollection<{
     label: string;
     icon: string;
@@ -46,6 +48,7 @@ export const CreateAppForm: React.FC<CreateAppFormProps> = ({
   setRuntimeSelect,
   runtimeList,
   onSubmit,
+  gitRepo, setGitRepo
 }) => {
   return (
     <Box width="100%" height="100svh">
@@ -119,9 +122,24 @@ export const CreateAppForm: React.FC<CreateAppFormProps> = ({
             </Portal>
           </Select.Root>
 
+          <Field.Root maxW="36rem" my="5" required>
+            <Field.Label>
+              Git Repository URL
+              <Text as="span" color="red.500" ml="1">
+                *
+              </Text>
+            </Field.Label>
+            <Input
+              value={gitRepo}
+              onChange={(e) => setGitRepo(e.target.value)}
+              placeholder="https://github.com/ahnaf-zamil/stratus"
+              width="400px"
+            />
+          </Field.Root>
+
           {/* Submit button */}
           <Button
-            disabled={!runtimeSelect.length || isEmptyString(appName)}
+            disabled={!runtimeSelect.length || isEmptyString(appName) || isEmptyString(gitRepo)}
             onClick={onSubmit}
             my="5"
           >

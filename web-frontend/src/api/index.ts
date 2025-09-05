@@ -3,7 +3,7 @@
  * Includes base route constants and a generic error-handling wrapper.
  */
 
-import axios, { type AxiosResponse } from "axios";
+import axios, { AxiosError, type AxiosResponse } from "axios";
 import type { APIResponse } from "./interfaces";
 
 // Base API URL and route constants

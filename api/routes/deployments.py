@@ -3,8 +3,10 @@ Routes for handling deployment creation.
 Uploads user code, stores it in MinIO, and triggers deployment via gRPC.
 """
 
+from http import HTTPStatus
 import os
 import shutil
+from typing import List
 import zipfile
 from pathlib import Path
 from uuid import uuid4
@@ -12,6 +14,9 @@ from uuid import uuid4
 from flask import Blueprint, abort, jsonify, render_template, request
 from minio import Minio
 
+from ..lib.db import db
+from ..lib.http import return_api_response
+from ..models.application import Deployment
 from ..services.management_plane import ManagementPlaneService, deployments_pb2
 
 deploy_bp = Blueprint("deployments", url_prefix="/deployments", import_name=__name__)
@@ -31,6 +36,17 @@ min_client = Minio(
     secret_key=MINIO_SECRET_KEY,
     secure=False,
 )
+
+
+@deploy_bp.get("/app/<app_id>")
+def get_deployments_by_app_id(app_id):
+    """Get all deployments for an application using application ID"""
+    deployments: List[Deployment] = (
+        db.session.execute(db.select(Deployment).filter_by(app_id=app_id))
+        .scalars()
+        .all()
+    )
+    return return_api_response([i.to_json() for i in deployments], HTTPStatus.OK)
 
 
 @deploy_bp.get("/create")

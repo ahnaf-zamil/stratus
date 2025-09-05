@@ -10,6 +10,7 @@ import { createListCollection } from "@chakra-ui/react";
 import { Toaster, toaster } from "@/components/ui/toaster";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isAxiosError } from "axios";
 
 export const CreateApplicationPage: React.FC = () => {
   // Prevents double-fetching in React 18 Strict Mode
@@ -17,6 +18,7 @@ export const CreateApplicationPage: React.FC = () => {
 
   const [appName, setAppName] = useState<string>("");
   const [runtimeSelect, setRuntimeSelect] = useState<string[]>([]);
+  const [gitRepo, setGitRepo] = useState<string>("");
 
   const [runtimes, setRuntimes] = useState<RuntimeConfig[]>([]);
 
@@ -51,7 +53,7 @@ export const CreateApplicationPage: React.FC = () => {
 
   // Handles form submission and validation
   const handleSubmit = useCallback(async () => {
-    if (!appName.trim() || !runtimeSelect.length) {
+    if (!appName.trim() || !runtimeSelect.length || !gitRepo.trim()) {
       toaster.create({
         title: "Missing required fields.",
         description: "Please fill out all fields before submitting.",
@@ -64,12 +66,13 @@ export const CreateApplicationPage: React.FC = () => {
 
     const [resp, err] = await appsApi.createApplication(
       appName,
-      runtimeSelect[0]
+      runtimeSelect[0],
+      gitRepo
     );
     if (err) {
       toaster.create({
-        title: "Failed to create application.",
-        description: "Please try again.",
+        title: `Failed to create application.`,
+        description: `Error code ${isAxiosError(err) ? err.response?.status : "unknown"}`,
         type: "error",
         duration: 5000,
         closable: true,
@@ -78,7 +81,7 @@ export const CreateApplicationPage: React.FC = () => {
       console.log(resp);
       // TODO: Redirect on success
     }
-  }, [appName, runtimeSelect]);
+  }, [appName, runtimeSelect, gitRepo]);
 
   return (
     <>
@@ -91,6 +94,8 @@ export const CreateApplicationPage: React.FC = () => {
         setAppName={setAppName}
         runtimeSelect={runtimeSelect}
         setRuntimeSelect={setRuntimeSelect}
+        gitRepo={gitRepo}
+        setGitRepo={setGitRepo}
         runtimeList={runtimeList}
         onSubmit={handleSubmit}
       />

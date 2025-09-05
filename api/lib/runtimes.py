@@ -39,3 +39,11 @@ def _transform(data):
 def get_runtime_config():
     """Returns the cached and transformed runtime config as a list of dicts."""
     return _load_yaml_once()
+
+
+def get_runtime_by_id(rid: str):
+    conf = get_runtime_config()
+
+    for i in conf:
+        if i["id"] == rid:
+            return i
