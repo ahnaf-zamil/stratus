@@ -1,128 +1,99 @@
-import { createApplication, getAppRuntimes } from "@/api/apps";
-import type { IRuntime } from "@/api/interfaces";
-import { isEmptyString } from "@/util";
-import {
-  Text,
-  Box,
-  Container,
-  createListCollection,
-  Field,
-  Heading,
-  Icon,
-  Input,
-  Portal,
-  Select,
-  Span,
-  Button,
-} from "@chakra-ui/react";
-import type React from "react";
-import { useEffect, useState } from "react";
-import type { IconType } from "react-icons";
-import { FaPython } from "react-icons/fa6";
+/**
+ * Page for creating a new application.
+ * Fetches available runtimes, manages form state, and handles submission.
+ */
 
-const iconsMap: Record<string, IconType> = {
-  Python: FaPython,
-};
+import { appsApi } from "@/api/apps";
+import type { RuntimeConfig } from "@/api/interfaces";
+import { CreateAppForm } from "@/components/forms/CreateAppForm";
+import { createListCollection } from "@chakra-ui/react";
+import { Toaster, toaster } from "@/components/ui/toaster";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export const CreateApplicationPage: React.FC = () => {
+  // Prevents double-fetching in React 18 Strict Mode
+  const hasFetched = useRef(false);
+
   const [appName, setAppName] = useState<string>("");
   const [runtimeSelect, setRuntimeSelect] = useState<string[]>([]);
 
-  const [runtimes, setRuntimes] = useState<IRuntime[]>([]);
-  const runtimeList = createListCollection({
+  const [runtimes, setRuntimes] = useState<RuntimeConfig[]>([]);
+
+  // Memoized transformation of runtimes into Chakra-compatible list format
+  const runtimeList = useMemo(() => createListCollection({
     items: runtimes.map((runtime) => ({
-      label: `${runtime.name} ${runtime.version}`,
-      icon: runtime.name,
+      label: `${runtime.language} ${runtime.version}`,
+      icon: runtime.language,
       value: runtime.id,
     })),
-  });
+  }), [runtimes]);
 
   useEffect(() => {
-    getAppRuntimes().then(([data, error]) => {
-      if (error) {
-        // Handle error
-      } else {
-        setRuntimes(data!);
-      }
-    });
+    if (!hasFetched.current) {
+      appsApi.getAppRuntimes().then(([data, error]) => {
+        if (error) {
+          // Show error toast if fetch fails
+          toaster.create({
+            title: "Failed to fetch application runtimes.",
+            description: "Please reload the page.",
+            type: "error",
+            duration: 5000,
+            closable: true,
+          });
+        } else {
+          setRuntimes(data?.data ?? []);
+        }
+      });
+      hasFetched.current = true;
+    }
   }, []);
 
-  const handleSubmit = async () => {
-    const [resp, err] = await createApplication(appName, runtimeSelect[0]);
+  // Handles form submission and validation
+  const handleSubmit = useCallback(async () => {
+    if (!appName.trim() || !runtimeSelect.length) {
+      toaster.create({
+        title: "Missing required fields.",
+        description: "Please fill out all fields before submitting.",
+        type: "warning",
+        duration: 4000,
+        closable: true,
+      });
+      return;
+    }
+
+    const [resp, err] = await appsApi.createApplication(
+      appName,
+      runtimeSelect[0]
+    );
     if (err) {
-      // Handle err
-      console.log(err);
+      toaster.create({
+        title: "Failed to create application.",
+        description: "Please try again.",
+        type: "error",
+        duration: 5000,
+        closable: true,
+      });
     } else {
       console.log(resp);
+      // TODO: Redirect on success
     }
-  };
+  }, [appName, runtimeSelect]);
 
   return (
-    <Box width="100%" height="100svh">
-      <Container maxWidth="5xl" paddingTop="10" height="100%" width="100%">
-        <Heading size="4xl" letterSpacing="tight">
-          Create a New Application
-        </Heading>
-        <Box marginY="10">
-          <Field.Root maxW="36rem" my="5" required>
-            <Field.Label>
-              Application Name
-              <Field.RequiredIndicator />
-            </Field.Label>
-            <Input
-              value={appName}
-              onChange={(e) => setAppName(e.target.value)}
-              placeholder="Python-app-1"
-              width="400px"
-            />
-          </Field.Root>
-          <Select.Root
-            value={runtimeSelect}
-            onValueChange={(e) => setRuntimeSelect(e.value)}
-            collection={runtimeList}
-            size="sm"
-            width="320px"
-          >
-            <Select.HiddenSelect />
-            <Select.Label>Select framework</Select.Label>
-            <Select.Control>
-              <Select.Trigger>
-                <Select.ValueText placeholder="Select framework" />
-              </Select.Trigger>
-              <Select.IndicatorGroup>
-                <Select.Indicator />
-              </Select.IndicatorGroup>
-            </Select.Control>
-            <Portal>
-              <Select.Positioner>
-                <Select.Content>
-                  {runtimeList.items.map((runtime) => {
-                    const IconComponent = iconsMap[runtime.icon];
-                    return (
-                      <Select.Item item={runtime} key={runtime.label}>
-                        <Span>
-                          <Icon mr="2">
-                            {IconComponent ? <IconComponent /> : null}
-                          </Icon>
-                          {runtime.label}
-                        </Span>
-                        <Select.ItemIndicator />
-                      </Select.Item>
-                    );
-                  })}
-                </Select.Content>
-              </Select.Positioner>
-            </Portal>
-          </Select.Root>
-          <Button
-            disabled={!runtimeSelect.length || isEmptyString(appName)}
-            onClick={handleSubmit}
-            my="5"
-          >
-            Create Application
-          </Button>
-        </Box>
-      </Container>
-    </Box>
+    <>
+      {/* Mounts global toaster UI */}
+      <Toaster />
+
+      {/* Renders the application creation form */}
+      <CreateAppForm
+        appName={appName}
+        setAppName={setAppName}
+        runtimeSelect={runtimeSelect}
+        setRuntimeSelect={setRuntimeSelect}
+        runtimeList={runtimeList}
+        onSubmit={handleSubmit}
+      />
+    </>
   );
 };

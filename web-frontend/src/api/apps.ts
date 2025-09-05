@@ -1,10 +1,19 @@
+/**
+ * Functions for calling "Application" related API endpoints.
+ */
+
 import { apiClient, APPS_ROUTE, safeApiCall } from ".";
-import type { IRuntime } from "./interfaces";
+import type { RuntimeConfig } from "./interfaces";
 
-export const getAppRuntimes = () =>
-  safeApiCall<IRuntime[]>(apiClient.get(APPS_ROUTE + "/runtimes"));
+const getAppRuntimes = () =>
+  safeApiCall<RuntimeConfig[]>(apiClient.get(`${APPS_ROUTE}/runtimes`));
 
-export const createApplication = (name: string, runtime: string) =>
-  safeApiCall<IRuntime[]>(
+const createApplication = (name: string, runtime: string) =>
+  safeApiCall<any>(
     apiClient.post(APPS_ROUTE + "/create", { name, runtime }),
   );
+
+export const appsApi = {
+  getAppRuntimes,
+  createApplication,
+}
